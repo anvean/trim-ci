@@ -4,7 +4,8 @@ import * as github from '@actions/github';
 function getRatePerMinute(): number {
   const os = process.env.RUNNER_OS; // 'Linux', 'Windows', 'macOS'
   const arch = process.env.RUNNER_ARCH; // 'X64', 'ARM64'
-  const isSelfHosted = process.env.RUNNER_ENVIRONMENT === 'self-hosted';
+  const isSelfHosted = process.env.RUNNER_ENVIRONMENT === 'self-hosted' || 
+                     process.env.RUNNER_NAME?.toLowerCase().includes('self');
 
   // 2026 March Update: New Platform Fee for Self-Hosted
   if (isSelfHosted) return 0.002;
@@ -47,11 +48,11 @@ async function run() {
       run_id: context.runId,
     });
 
-    const startTime = new Date(runData.created_at).getTime();
+    const startTime = new Date(runData.run_started_at || runData.created_at).getTime();
     const durationMin = Math.max(1, Math.ceil((Date.now() - startTime) / 60000));
     const totalCost = (durationMin * rate).toFixed(4);
 
-    const message = `### 💰 TrimCI Cost Audit
+    const message = `### 💰 Trim-CI Cost Audit
 - **Runner:** ${process.env.RUNNER_OS} (${process.env.RUNNER_ARCH})
 - **Duration:** ~${durationMin} minute(s)
 - **Estimated Cost:** \`$${totalCost}\`

@@ -1,12 +1,12 @@
 # ⚡ TRIM-CI: Real-Time CI Cost Auditor
 
-**Stop flying blind.** TrimCI brings financial visibility to your DevOps pipeline by injecting real-time cost auditing directly into your Pull Requests.
+**Stop flying blind.** Trim-CI brings financial visibility to your DevOps pipeline by injecting real-time cost auditing directly into your Pull Requests.
 
-## ❓ Why TrimCI?
+## ❓ Why Trim-CI?
 
 In 2026, GitHub Actions pricing is more complex than ever. With the introduction of the **$0.002 platform fee** for self-hosted runners and varied rates for ARM64 vs. X64, developers often don't realize how much a "quick test" costs until the monthly bill arrives.
 
-**TrimCI** solves this by:
+**Trim-CI** solves this by:
 
 * **Instant Visibility:** Detects runner type (Linux/Mac/Windows) and Architecture (ARM64/X64).  
 * **Automated Auditing:** Posts a cost breakdown directly to the PR.  
@@ -14,7 +14,7 @@ In 2026, GitHub Actions pricing is more complex than ever. With the introduction
 
 ## 🚀 Quick Start
 
-Add TrimCI as the final step in your `.github/workflows/ci.yml`. It is recommended to place it at the end to capture the full duration of your tests.
+Add Trim-CI as the final step in your `.github/workflows/ci.yml`. It is recommended to place it at the end to capture the full duration of your tests.
 
 jobs:  
   test:  
@@ -26,13 +26,13 @@ jobs:
         
       \# ... your build/test steps ...
 
-      \- name: TrimCI Cost Audit  
+      \- name: Trim-CI Cost Audit  
         uses: anvean/trim-ci@v1  
         if: always() \# Ensures it runs even if tests fail  
         with:  
           github-token: ${{ secrets.GITHUB\_TOKEN }}
 
-## 🗺️ Roadmap: The Future of TrimCI
+## 🗺️ Roadmap: The Future of Trim-CI
 
 We are just getting started. Our mission is to make cloud waste visible across the entire development lifecycle.
 
@@ -43,7 +43,7 @@ We are just getting started. Our mission is to make cloud waste visible across t
 
 ## 📊 2026 Pricing Matrix (Included)
 
-TrimCI comes pre-loaded with the March 2026 GitHub price list to ensure accuracy without needing administrative billing access:
+Trim-CI comes pre-loaded with the March 2026 GitHub price list to ensure accuracy without needing administrative billing access:
 
 | Runner Type | Architecture | Price / Minute |
 | ----- | ----- | ----- |
@@ -60,7 +60,7 @@ TrimCI comes pre-loaded with the March 2026 GitHub price list to ensure accuracy
 
 ## 🛡 Security & Privacy
 
-TrimCI is **Local-First**. It calculates costs using environment variables already present in your runner. No source code or sensitive data is ever sent to external servers.
+Trim-CI is **Local-First**. It calculates costs using environment variables already present in your runner. No source code or sensitive data is ever sent to external servers.
 
 Created by **anvean** • Helping teams ship faster and cheaper.
 

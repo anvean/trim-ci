@@ -1,4 +1,4 @@
-name: TrimCI Test Suite
+name: Trim-CI Test Suite
 
 on:
   pull_request:
@@ -8,7 +8,7 @@ on:
 jobs:
   audit-test:
     runs-on: ubuntu-latest
-    # Crucial: This permission allows TrimCI to leave a comment on your PR
+    # Crucial: This permission allows Trim-CI to leave a comment on your PR
     permissions:
       pull-requests: write
       contents: read
@@ -19,7 +19,7 @@ jobs:
 
       # This step runs the action from the code in the current repository
       # Always set uses: ./ to test your current code 
-      - name: TrimCI Local Audit
+      - name: Trim-CI Local Audit
         uses: ./ 
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}

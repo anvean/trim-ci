@@ -1,6 +1,6 @@
-name: 'TrimCI'
+name: 'Trim-CI'
 description: 'Slashes CI waste by reporting real-time run costs'
-author: 'YourName'
+author: 'Anvean Technologies'
 inputs:
   github-token:
     description: 'Required for PR comments'
