@@ -1,0 +1,14 @@
+name: 'TrimCI'
+description: 'Slashes CI waste by reporting real-time run costs'
+author: 'YourName'
+inputs:
+  github-token:
+    description: 'Required for PR comments'
+    required: true
+    default: ${{ github.token }}
+runs:
+  using: 'node20'
+  main: 'dist/index.js'
+branding:
+  icon: 'zap'
+  color: 'green'

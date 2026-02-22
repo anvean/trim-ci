@@ -1,0 +1,16 @@
+# 1. Dependency Clutter (NEVER upload this)
+node_modules/
+
+# 2. Local OS Junk
+.DS_Store
+Thumbs.db
+
+# 3. Development specific
+*.log
+.env
+.vscode/
+.idea/
+
+# 4. TypeScript specific
+# We ignore the generic tsbuildinfo, but we DO NOT ignore /dist
+*.tsbuildinfo

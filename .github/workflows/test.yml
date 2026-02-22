@@ -1,0 +1,29 @@
+name: TrimCI Test Suite
+
+on:
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch: # Allows you to run it manually for testing
+
+jobs:
+  audit-test:
+    runs-on: ubuntu-latest
+    # Crucial: This permission allows TrimCI to leave a comment on your PR
+    permissions:
+      pull-requests: write
+      contents: read
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # This step runs the action from the code in the current repository
+      # Always set uses: ./ to test your current code 
+      - name: TrimCI Local Audit
+        uses: ./ 
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      # Optional: A dummy step to add some "duration" to the test
+      - name: Simulating Work
+        run: sleep 10
