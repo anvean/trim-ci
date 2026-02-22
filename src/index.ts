@@ -4,52 +4,61 @@ import * as github from '@actions/github';
 function getRatePerMinute(): number {
   const os = process.env.RUNNER_OS; // 'Linux', 'Windows', 'macOS'
   const arch = process.env.RUNNER_ARCH; // 'X64', 'ARM64'
-  const isSelfHosted = process.env.RUNNER_ENVIRONMENT === 'self-hosted' || 
-                     process.env.RUNNER_NAME?.toLowerCase().includes('self');
 
-  // 2026 March Update: New Platform Fee for Self-Hosted
+  const isSelfHosted =
+    process.env.RUNNER_ENVIRONMENT === 'self-hosted' ||
+    process.env.RUNNER_NAME?.toLowerCase().includes('self');
+
   if (isSelfHosted) return 0.002;
 
-  // 2026 January Update: Reduced Hosted Runner Rates
   switch (os) {
     case 'macOS':
-      return 0.062; // Standard 3/4-core M1/Intel
+      return 0.062;
     case 'Windows':
-      return 0.010; // Standard 2-core
+      return 0.010;
     case 'Linux':
     default:
-      // ARM64 is now the budget king in 2026
-      return arch === 'ARM64' ? 0.005 : 0.006; 
+      return arch === 'ARM64' ? 0.005 : 0.006;
   }
 }
 
 async function run() {
   try {
-    const token = core.getInput('github-token');
+    const token = core.getInput('github-token', { required: true });
     const octokit = github.getOctokit(token);
     const context = github.context;
 
-    // Check if repo is public (Actions are free for Open Source)
+    // Fetch repo details
     const { data: repo } = await octokit.rest.repos.get({
       owner: context.repo.owner,
       repo: context.repo.repo,
     });
 
+    // Public repos are free
     if (!repo.private) {
       core.info("Public repository detected. Cost is $0.00 (Free for Open Source).");
       return;
     }
 
     const rate = getRatePerMinute();
-    
-    // Fetch run metadata to get precise start time
+
+    // Fetch workflow run metadata
     const { data: runData } = await octokit.rest.actions.getWorkflowRun({
-      ...context.repo,
+      owner: context.repo.owner,
+      repo: context.repo.repo,
       run_id: context.runId,
     });
 
-    const startTime = new Date(runData.run_started_at || runData.created_at).getTime();
-    const durationMin = Math.max(1, Math.ceil((Date.now() - startTime) / 60000));
+    // Calculate duration safely using REST fields
+    const start = new Date(
+      runData.run_started_at ?? runData.created_at
+    ).getTime();
+
+    const end = new Date(runData.updated_at).getTime();
+
+    const durationMs = Math.max(0, end - start);
+    const durationMin = Math.max(1, Math.ceil(durationMs / 60000));
+
     const totalCost = (durationMin * rate).toFixed(4);
 
     const message = `### 💰 Trim-CI Cost Audit
@@ -60,15 +69,25 @@ async function run() {
 
     core.info(message);
 
+    // Comment only if PR event
     if (context.payload.pull_request) {
       await octokit.rest.issues.createComment({
-        ...context.repo,
+        owner: context.repo.owner,
+        repo: context.repo.repo,
         issue_number: context.payload.pull_request.number,
-        body: message
+        body: message,
       });
     }
-  } catch (error: any) {
-    core.setFailed(error.message);
+
+    // Optional: expose output for advanced users
+    core.setOutput("total-cost", totalCost);
+
+  } catch (error) {
+    if (error instanceof Error) {
+      core.setFailed(error.message);
+    } else {
+      core.setFailed("Unknown error occurred.");
+    }
   }
 }
 
