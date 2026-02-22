@@ -3,7 +3,9 @@
 **Stop flying blind.** Trim-CI brings financial visibility to your DevOps pipeline by injecting real-time cost auditing directly into your Pull Requests.
 
 ---
-
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/anvean/trim-ci?color=green&label=version&logo=github&style=flat-square)](https://github.com/anvean/trim-ci/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://github.com/anvean/trim-ci/blob/main/LICENSE)
+---
 ## ❓ Why Trim-CI?
 
 In 2026, GitHub Actions pricing is more complex than ever. With the introduction of the **$0.002 platform fee** for self-hosted runners and varied rates for ARM64 vs. X64, developers often don't realize how much a "quick test" costs until the monthly bill arrives.
