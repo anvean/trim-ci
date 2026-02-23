@@ -23,31 +23,58 @@ In 2026, GitHub Actions pricing is more complex than ever. With the introduction
 Add Trim-CI as the final step in your `.github/workflows/ci.yml`.  
 It is recommended to place it at the end to capture the full duration of your tests.
 
+1️⃣ Quick Start (Minimal Required Only)
+```
 jobs:
-
   test:
-
     runs-on: ubuntu-latest
 
     permissions:
-
-      pull-requests: write \# Required to post comments
+      pull-requests: write # Required to post comments
 
     steps:
+      - uses: actions/checkout@v4
 
-      \- uses: actions/checkout@v4
+      # ... your build/test steps ...
 
-      \# ... your build/test steps ...
-
-      \- name: Trim-CI Cost Audit
-
+      - name: Trim-CI Cost Audit
         uses: anvean/trim-ci@v1
-
-        if: always() \# Ensures it runs even if tests fail
-
+        if: always() # Ensures it runs even if tests fail
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+```
+2️⃣ Optional Configuration to force billing and debug
 
-          github-token: ${{ secrets.GITHUB\_TOKEN }}
+```
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    permissions:
+      pull-requests: write # Required to post comments
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # ... your build/test steps ...
+
+      - name: Trim-CI Cost Audit
+        uses: anvean/trim-ci@v1
+        if: always() # Ensures it runs even if tests fail
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          force-billing: true   # Optional
+          debug: true           # Optional
+```
+
+3️⃣ Inputs Table
+
+⚙️ Inputs
+| Input	| Required | Default | Description |
+| ----- | ----- | ----- | ----- |
+|**github-token**	| ✅ Yes | — | Used to post PR comments |
+|**force-billing**| ❌ No | false	| Calculates cost even if GitHub shows free usage |
+|**debug** | ❌ No | false	| Enables detailed runtime + pricing logs |
 
 ---
 
@@ -96,7 +123,7 @@ Trim-CI is **Local-First**. It calculates costs using environment variables alre
 
 ---
 
-Created by **anvean** • Helping teams ship faster and cheaper 🚀
+Created by **Anvean Technologies** • Helping teams ship faster and cheaper 🚀
 
 ---
 

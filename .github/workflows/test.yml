@@ -23,6 +23,8 @@ jobs:
         uses: ./ 
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          force-billing: true
+          debug: true
 
       # Optional: A dummy step to add some "duration" to the test
       - name: Simulating Work

@@ -6,9 +6,20 @@ inputs:
     description: 'Required for PR comments'
     required: true
     default: ${{ github.token }}
+  force-billing:
+    description: "Force billing calculation even for public repositories"
+    required: false
+    default: "false"
+  debug:
+    description: "Enable debug logging"
+    required: false
+    default: "false"
+
 runs:
   using: 'node20'
   main: 'dist/index.js'
+
 branding:
-  icon: 'zap'
-  color: 'green'
+  icon: "dollar-sign"
+  color: "green"
+

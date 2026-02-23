@@ -2,8 +2,8 @@ import * as core from '@actions/core';
 import * as github from '@actions/github';
 
 function getRatePerMinute(): number {
-  const os = process.env.RUNNER_OS; // 'Linux', 'Windows', 'macOS'
-  const arch = process.env.RUNNER_ARCH; // 'X64', 'ARM64'
+  const os = process.env.RUNNER_OS; // Linux, Windows, macOS
+  const arch = process.env.RUNNER_ARCH; // X64, ARM64
 
   const isSelfHosted =
     process.env.RUNNER_ENVIRONMENT === 'self-hosted' ||
@@ -25,62 +25,81 @@ function getRatePerMinute(): number {
 async function run() {
   try {
     const token = core.getInput('github-token', { required: true });
+    const forceBilling = core.getInput('force-billing') === 'true';
+    const debug = core.getInput('debug') === 'true';
+
     const octokit = github.getOctokit(token);
     const context = github.context;
 
-    // Fetch repo details
-    const { data: repo } = await octokit.rest.repos.get({
-      owner: context.repo.owner,
-      repo: context.repo.repo,
+    const { owner, repo } = context.repo;
+
+    // Fetch repository details
+    const { data: repoData } = await octokit.rest.repos.get({
+      owner,
+      repo,
     });
 
-    // Public repos are free
-    if (!repo.private) {
+    if (!repoData.private && !forceBilling) {
       core.info("Public repository detected. Cost is $0.00 (Free for Open Source).");
       return;
     }
 
     const rate = getRatePerMinute();
 
-    // Fetch workflow run metadata
-    const { data: runData } = await octokit.rest.actions.getWorkflowRun({
-      owner: context.repo.owner,
-      repo: context.repo.repo,
-      run_id: context.runId,
-    });
+    // Fetch all jobs in this workflow run
+    const { data: jobsData } =
+      await octokit.rest.actions.listJobsForWorkflowRun({
+        owner,
+        repo,
+        run_id: context.runId,
+      });
 
-    // Calculate duration safely using REST fields
-    const start = new Date(
-      runData.run_started_at ?? runData.created_at
-    ).getTime();
+    let totalMs = 0;
 
-    const end = new Date(runData.updated_at).getTime();
+    for (const job of jobsData.jobs) {
+      if (job.started_at && job.completed_at) {
+        const start = new Date(job.started_at).getTime();
+        const end = new Date(job.completed_at).getTime();
+        totalMs += Math.max(0, end - start);
+      }
+    }
 
-    const durationMs = Math.max(0, end - start);
-    const durationMin = Math.max(1, Math.ceil(durationMs / 60000));
-
+    const durationMinRaw = totalMs / 60000;
+    const durationMin = Math.max(1, Math.ceil(durationMinRaw));
     const totalCost = (durationMin * rate).toFixed(4);
 
+    if (debug) {
+      core.info(`Runner OS: ${process.env.RUNNER_OS}`);
+      core.info(`Runner Arch: ${process.env.RUNNER_ARCH}`);
+      core.info(`Rate per minute: $${rate}`);
+      core.info(`Total milliseconds: ${totalMs}`);
+      core.info(`Total minutes (rounded): ${durationMin}`);
+      core.info(`Total cost: $${totalCost}`);
+    }
+
     const message = `### 💰 Trim-CI Cost Audit
+
 - **Runner:** ${process.env.RUNNER_OS} (${process.env.RUNNER_ARCH})
-- **Duration:** ~${durationMin} minute(s)
+- **Total Job Time:** ~${durationMin} minute(s)
+- **Rate:** \`$${rate}/min\`
 - **Estimated Cost:** \`$${totalCost}\`
+
 *Prices based on official GitHub 2026 rates.*`;
 
     core.info(message);
 
-    // Comment only if PR event
+    // Comment on PR if applicable
     if (context.payload.pull_request) {
       await octokit.rest.issues.createComment({
-        owner: context.repo.owner,
-        repo: context.repo.repo,
+        owner,
+        repo,
         issue_number: context.payload.pull_request.number,
         body: message,
       });
     }
 
-    // Optional: expose output for advanced users
     core.setOutput("total-cost", totalCost);
+    core.setOutput("total-minutes", durationMin.toString());
 
   } catch (error) {
     if (error instanceof Error) {
